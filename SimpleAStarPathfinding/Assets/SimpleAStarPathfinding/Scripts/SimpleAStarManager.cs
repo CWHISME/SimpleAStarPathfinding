@@ -23,6 +23,8 @@ namespace SimpleAStar
             }
         }
 
+        private readonly int _GAdder = 10;
+        private readonly int _HAdder = 20;
 
         //暂时，假设一个场景只会有一个寻路数据
         private SimpleAStar _aStar;
@@ -170,15 +172,15 @@ namespace SimpleAStar
             return _aStar.MapData[indexX, indexY];
         }
 
-        private static int CalcG(Node node)
+        private int CalcG(Node node)
         {
-            return node.G + 1;
+            return node.G + (int)(_aStar.GridSize * _GAdder);
         }
 
-        private static int CalcH(Node node, Node endNode)
+        private int CalcH(Node node, Node endNode)
         {
             //使用曼哈顿距离进行Hint
-            return (int)(Mathf.Abs(endNode.X - node.X) + Mathf.Abs(endNode.Z - node.Z));
+            return (int)(Mathf.Abs(endNode.X - node.X) + Mathf.Abs(endNode.Z - node.Z)) * _HAdder;
             //return (int)Vector3.Distance(endNode.Position, node.Position);
         }
 
