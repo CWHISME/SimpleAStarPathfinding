@@ -21,18 +21,31 @@ namespace SimpleAStar
         //格子的大小
         private float _gridSize = 1f;
         public float GridSize { get { return _gridSize; } }
-
+        [Tooltip("是否使用预先烘焙的数据？若选择false，则第一次运行时，将会自定重新计算一次")]
         [SerializeField]
+        private bool _useBakeMapData = true;
+
         [HideInInspector]
+        [SerializeField]
+        private byte[] _rawMapData;
+
         private Node[,] _nodeList;
 
         private void Awake()
         {
             SimpleAStarManager.GetInstance.Register(this);
 
-            //测试代码
-            //因为还没做保存功能，所以开始时刷新一下
-            Scan();
+            //若不是预先计算的地图，那么第一次运行时，开始时刷新一下
+            if (!_useBakeMapData)
+                Scan();
+            //否则，读取保存地图数据
+            else if (!LoadMapData())
+            {
+                Debug.Log("数据加载失败！将会重新扫描地图数据！若目的是想实时计算，那么请取消勾选“UseBakeMapData”选项。");
+
+                //若读取数据失败，那么也会直接实时计算一次
+                Scan();
+            }
         }
 
         /// <summary>
@@ -54,8 +67,29 @@ namespace SimpleAStar
                     Node node = Tools.CreateNode(new Vector3(x + i * _gridSize, y, z + j * _gridSize));
                     node.SetIndex(i, j);
                     _nodeList[i, j] = node;
+
                 }
+
+#if UNITY_EDITOR
+                int cur = i;
+                UnityEditor.EditorUtility.DisplayProgressBar("Scan.....", "Scan A* Map Data: " + cur + "/" + (_gridX * _gridY), cur / _gridX);
+#endif
             }
+
+#if UNITY_EDITOR
+            UnityEditor.EditorUtility.ClearProgressBar();
+#endif
+        }
+
+        public void SaveMapData()
+        {
+            _rawMapData = Tools.MapToByteData(_nodeList);
+        }
+
+        public bool LoadMapData()
+        {
+            _nodeList = Tools.ByteDataToMap(_rawMapData);
+            return _nodeList != null;
         }
 
         /// <summary>
@@ -64,6 +98,12 @@ namespace SimpleAStar
         public Node[,] MapData
         {
             get { return _nodeList; }
+        }
+
+        public void ClearData()
+        {
+            _nodeList = null;
+            _rawMapData = null;
         }
 
 #if UNITY_EDITOR

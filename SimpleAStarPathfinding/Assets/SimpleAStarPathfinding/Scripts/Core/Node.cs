@@ -15,8 +15,10 @@ namespace SimpleAStar
     [System.Serializable]
     public class Node : NodeBase, IComparable<Node>
     {
+
+        public uint NodeLabel;
+
         private Node _parentNode;
-        private bool _obstacle = false;
 
         private int _G;
         private int _H;
@@ -26,12 +28,18 @@ namespace SimpleAStar
         public int F { get { return _F; } }
 
         //用于方便从地图数据中取出的索引
+        [SerializeField]
         private int _indexX;
+        [SerializeField]
         private int _indexY;
         public int IndexX { get { return _indexX; } }
         public int IndexY { get { return _indexY; } }
 
+        [SerializeField]
+        private bool _obstacle = false;
         public bool IsObstacle { get { return _obstacle; } set { _obstacle = value; } }
+
+        public Node() { }
 
         public Node(float x, float y, float z) : base(x, y, z) { }
 
@@ -52,7 +60,7 @@ namespace SimpleAStar
 
         public void BuildPath(List<Vector3> path)
         {
-            path.Add(Position);
+            path.Insert(0, Position);
             if (_parentNode != null)
                 _parentNode.BuildPath(path);
         }

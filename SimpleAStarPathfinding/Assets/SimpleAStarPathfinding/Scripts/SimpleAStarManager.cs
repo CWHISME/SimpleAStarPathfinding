@@ -28,16 +28,19 @@ namespace SimpleAStar
 
         //暂时，假设一个场景只会有一个寻路数据
         private SimpleAStar _aStar;
+        private float _gridSize;
 
         public void Register(SimpleAStar aStar)
         {
             _aStar = aStar;
+
+            _gridSize = _aStar.GridSize;
         }
 
         private Node _startNode;
         private Node _endNode;
-        private List<Node> _openList = new List<Node>();
-        private List<Node> _closeList = new List<Node>();
+        private List<Node> _openList = new List<Node>(100);
+        private List<Node> _closeList = new List<Node>(100);
         private List<Vector3> _pathList = new List<Vector3>();
 
 #if UNITY_EDITOR
@@ -68,6 +71,7 @@ namespace SimpleAStar
             //Debug.Log("Thread");
             //lock (this)
             {
+
                 _pathList.Clear();
                 _openList.Clear();
                 _closeList.Clear();
@@ -105,7 +109,7 @@ namespace SimpleAStar
                                     {
                                         Vector3[] path = _pathList.ToArray();
                                         //最后将路径反向
-                                        System.Array.Reverse(path);
+                                        //System.Array.Reverse(path);
                                         (callback as System.Action<Vector3[]>).Invoke(path);
                                     }
                                     return;
@@ -174,7 +178,7 @@ namespace SimpleAStar
 
         private int CalcG(Node node)
         {
-            return node.G + (int)(_aStar.GridSize * _GAdder);
+            return node.G + (int)(_gridSize * _GAdder);
         }
 
         private int CalcH(Node node, Node endNode)

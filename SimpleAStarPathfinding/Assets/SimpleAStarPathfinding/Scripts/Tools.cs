@@ -37,5 +37,63 @@ namespace SimpleAStar
 
             return node;
         }
+
+        /// <summary>
+        /// 地图数据转化为二进制数据
+        /// </summary>
+        /// <param name="maps"></param>
+        /// <returns></returns>
+        public static byte[] MapToByteData(Node[,] maps)
+        {
+            using (System.IO.MemoryStream stream = new System.IO.MemoryStream())
+            {
+                using (System.IO.BinaryWriter w = new System.IO.BinaryWriter(stream))
+                {
+                    int x = maps.GetLength(0);
+                    int y = maps.GetLength(1);
+                    w.Write(x);
+                    w.Write(y);
+                    for (int i = 0; i < x; i++)
+                    {
+                        for (int j = 0; j < y; j++)
+                        {
+                            w.Write(JsonUtility.ToJson(maps[i, j]));
+                        }
+                    }
+                }
+
+                return stream.ToArray();
+            }
+        }
+
+        /// <summary>
+        /// 存储的二进制数据转化为地图数据
+        /// </summary>
+        /// <param name="byteData"></param>
+        /// <returns></returns>
+        public static Node[,] ByteDataToMap(byte[] byteData)
+        {
+            if (byteData == null || byteData.Length < 1) return null;
+
+            using (System.IO.MemoryStream stream = new System.IO.MemoryStream(byteData))
+            {
+                using (System.IO.BinaryReader r = new System.IO.BinaryReader(stream))
+                {
+                    int x = r.ReadInt32();
+                    int y = r.ReadInt32();
+
+                    Node[,] maps = new Node[x, y];
+
+                    for (int i = 0; i < x; i++)
+                    {
+                        for (int j = 0; j < y; j++)
+                        {
+                            maps[i, j] = JsonUtility.FromJson<Node>(r.ReadString());
+                        }
+                    }
+                    return maps;
+                }
+            }
+        }
     }
 }
