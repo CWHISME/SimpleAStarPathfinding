@@ -58,8 +58,10 @@ namespace SimpleAStar
             //Debug.Log("Reuest");
             //计算起点位于数据图中的坐标
             _startNode = GetNode(start, _aStar);
+            if (_startNode.IsObstacle) return;
             //计算终点位于数据图中的坐标
             _endNode = GetNode(end, _aStar);
+            if (_endNode.IsObstacle) return;
 
             //System.Threading.Thread thread = new System.Threading.Thread(new System.Threading.ParameterizedThreadStart(CalcPathThread));
             //thread.Start(callBack);
