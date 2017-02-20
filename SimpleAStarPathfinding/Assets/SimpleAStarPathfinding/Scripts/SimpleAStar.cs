@@ -24,6 +24,18 @@ namespace SimpleAStar
         [Tooltip("是否使用预先烘焙的数据？若选择false，则第一次运行时，将会自定重新计算一次")]
         [SerializeField]
         private bool _useBakeMapData = true;
+        [Tooltip("使用启发值类型")]
+        public EnumHeuristic Heuristic;
+#if UNITY_EDITOR
+        [SerializeField]
+        private DrawGridMethod _drawGridMethd = DrawGridMethod.All;
+#endif
+
+        //计算初始点
+        [HideInInspector]
+        [SerializeField]
+        private Vector3 _calcMapPosition;
+        public Vector3 MapOriginPosition { get { return _calcMapPosition; } }
 
         [HideInInspector]
         [SerializeField]
@@ -56,9 +68,11 @@ namespace SimpleAStar
             //初始化数组
             _nodeList = new Node[_gridX, _gridY];
             //起点，为当前物体的位置
-            float x = transform.position.x;
+            float x = transform.position.x - _gridX / (2 / _gridSize);
             float y = transform.position.y;
-            float z = transform.position.z;
+            float z = transform.position.z - _gridY / (2 / _gridSize);
+
+            _calcMapPosition = new Vector3(x, y, z);
 
             for (int i = 0; i < _gridX; i++)
             {
@@ -72,7 +86,7 @@ namespace SimpleAStar
 
 #if UNITY_EDITOR
                 int cur = i;
-                UnityEditor.EditorUtility.DisplayProgressBar("Scan.....", "Scan A* Map Data: " + cur + "/" + (_gridX * _gridY), cur / _gridX);
+                UnityEditor.EditorUtility.DisplayProgressBar("Scan.....", "Scan A* Map Data: " + cur * _gridY + "/" + (_gridX * _gridY), cur / _gridX);
 #endif
             }
 
@@ -110,16 +124,34 @@ namespace SimpleAStar
         private void OnDrawGizmos()
         {
             if (_nodeList == null) return;
+            if (_drawGridMethd == DrawGridMethod.None) return;
             Color normal = new Color(0, 0, 1, 0.3f);
             Color obstacle = new Color(1, 0, 0, 0.3f);
-            for (int i = 0; i < _nodeList.GetLength(0); i++)
+
+            switch (_drawGridMethd)
             {
-                for (int j = 0; j < _nodeList.GetLength(1); j++)
-                {
-                    Node node = _nodeList[i, j];
-                    Gizmos.color = node.IsObstacle ? obstacle : normal;
-                    Gizmos.DrawWireCube(node.Position, Vector3.one * _gridSize);
-                }
+                case DrawGridMethod.All:
+                    for (int i = 0; i < _nodeList.GetLength(0); i++)
+                    {
+                        for (int j = 0; j < _nodeList.GetLength(1); j++)
+                        {
+                            Node node = _nodeList[i, j];
+                            Gizmos.color = node.IsObstacle ? obstacle : normal;
+                            Gizmos.DrawWireCube(node.Position, Vector3.one * _gridSize);
+                        }
+                    }
+                    break;
+                case DrawGridMethod.Simple:
+                    Gizmos.color = normal;
+                    Node startNode = _nodeList[0, 0];
+                    int x = _nodeList.GetLength(0);
+                    int y = _nodeList.GetLength(1);
+                    Gizmos.DrawCube(startNode.Position + new Vector3(x / 2, 0, y / 2), new Vector3(x, 1, y) * _gridSize);
+                    break;
+                case DrawGridMethod.None:
+                    break;
+                default:
+                    break;
             }
 
 
@@ -134,6 +166,14 @@ namespace SimpleAStar
             {
                 Gizmos.DrawCube(node.Position, Vector3.one * _gridSize);
             }
+        }
+
+        public enum DrawGridMethod
+        {
+            All,
+            //Medium,
+            Simple,
+            None,
         }
 #endif
 

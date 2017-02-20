@@ -59,9 +59,16 @@ namespace SimpleAStar
                         {
                             w.Write(JsonUtility.ToJson(maps[i, j]));
                         }
+#if UNITY_EDITOR
+                        int cur = i;
+                        UnityEditor.EditorUtility.DisplayProgressBar("Save.....", "Save Map Data: " + cur * y + "/" + (x * y), cur / x);
+#endif
                     }
                 }
 
+#if UNITY_EDITOR
+                UnityEditor.EditorUtility.ClearProgressBar();
+#endif
                 return stream.ToArray();
             }
         }
@@ -90,7 +97,14 @@ namespace SimpleAStar
                         {
                             maps[i, j] = JsonUtility.FromJson<Node>(r.ReadString());
                         }
+#if UNITY_EDITOR
+                        int cur = i;
+                        UnityEditor.EditorUtility.DisplayProgressBar("Load.....", "Load Map Data: " + cur * y + "/" + (x * y), cur / x);
+#endif
                     }
+#if UNITY_EDITOR
+                    UnityEditor.EditorUtility.ClearProgressBar();
+#endif
                     return maps;
                 }
             }

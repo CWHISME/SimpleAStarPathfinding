@@ -183,14 +183,21 @@ namespace SimpleAStar
 
         private int CalcH(Node node, Node endNode)
         {
-            //使用曼哈顿距离进行Hint
-            return (int)(Mathf.Abs(endNode.X - node.X) + Mathf.Abs(endNode.Z - node.Z)) * _HAdder;
-            //return (int)Vector3.Distance(endNode.Position, node.Position);
+            switch (_aStar.Heuristic)
+            {
+                case EnumHeuristic.Manhattan:
+                    //使用曼哈顿距离进行Hint
+                    return (int)(Mathf.Abs(endNode.X - node.X) + Mathf.Abs(endNode.Z - node.Z)) * _HAdder;
+                //欧几里德距离
+                case EnumHeuristic.Euclid:
+                default:
+                    return (int)Vector3.Distance(endNode.Position, node.Position) * _HAdder;
+            }
         }
 
         private static Node GetNode(Vector3 pos, SimpleAStar aStar)
         {
-            Vector3 originPos = aStar.transform.position;
+            Vector3 originPos = aStar.MapOriginPosition;
             int x = (int)((pos.x - originPos.x) / aStar.GridSize);
             int y = (int)((pos.z - originPos.z) / aStar.GridSize);
 
